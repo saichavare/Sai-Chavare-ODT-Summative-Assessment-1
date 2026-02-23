@@ -1,0 +1,61 @@
+from machine import Pin, PWM   
+import time                    # importing time so we can add delays
+
+buzzer = PWM(Pin(27))          
+buzzer.duty(0)                 # keep buzzer off at the start
+
+sensor = Pin(15, Pin.IN)       # sensor connected to pin 15 (input to detect ball)
+
+IN1 = Pin(5, Pin.OUT)          # stepper motor wire 1
+IN2 = Pin(18, Pin.OUT)         # stepper motor wire 2
+IN3 = Pin(19, Pin.OUT)         # stepper motor wire 3
+IN4 = Pin(21, Pin.OUT)         # stepper motor wire 4
+
+victory_tune = [523, 659, 784, 1046]   # frequencies of the victory sound (C, E, G, high C)
+
+while True:                    # keep running forever
+
+    if sensor.value() == 0:    # if ball goes inside and sensor detects it
+
+        buzzer.duty(512)       # turn buzzer on (medium volume)
+
+        for note in victory_tune:   # go through each note in the tune
+            buzzer.freq(note)       # change pitch to that note
+            time.sleep(0.2)         # play each note for 0.2 seconds
+
+        buzzer.freq(1046)      # play the last high note again
+        time.sleep(0.5)        # hold it longer for dramatic effect
+        buzzer.duty(0)         # turn buzzer off
+
+        for i in range(200):   # rotate motor 200 times (controls how much it spins)
+
+            IN1.value(1)       # turn on coil 1
+            IN2.value(0)
+            IN3.value(0)
+            IN4.value(0)
+            time.sleep(0.005)  # tiny delay so motor can move
+
+            IN1.value(0)
+            IN2.value(1)       # turn on coil 2
+            IN3.value(0)
+            IN4.value(0)
+            time.sleep(0.005)
+
+            IN1.value(0)
+            IN2.value(0)
+            IN3.value(1)       # turn on coil 3
+            IN4.value(0)
+            time.sleep(0.005)
+
+            IN1.value(0)
+            IN2.value(0)
+            IN3.value(0)
+            IN4.value(1)       # turn on coil 4
+            time.sleep(0.005)
+
+        IN1.value(0)           # turn everything off after spinning
+        IN2.value(0)
+        IN3.value(0)
+        IN4.value(0)
+
+        time.sleep(1)          # wait 1 second so it doesn’t trigger again immediately
